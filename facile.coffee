@@ -8,6 +8,35 @@ facile.update = startProcessing = ($template, data) ->
     bindOrRemove($template, key, value)
   $template.html()
 
+if module?.exports
+  fs = require 'fs'
+  facile.$ = require 'cheerio'
+  _templateCache = {}
+
+  _render = (template, locals, cb) ->
+    try
+      html = facile template, locals, facile.$
+      cb null, html
+    catch e
+      cb e
+
+  facile.__express = (path, options, callback) ->
+    if 'production' == options.settings.env
+      if _templateCache[path]
+        _render _templateCache[path], options, callback
+      else
+        fs.readFile path, (err, data) ->
+          if err then return callback err
+          _templateCache[path] = data.toString()
+          _render _templateCache[path], options, callback
+    else
+      fs.readFile path, (err, data) ->
+        if err then return callback err
+        _render data.toString(), options, callback
+
+  facile.clearCache = ->
+    _templateCache = {}
+
 find = ($el, key) ->
   $result = $el.find('#' + key)
   $result = $el.find('.' + key) if $result.length == 0

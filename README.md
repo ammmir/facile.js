@@ -150,7 +150,7 @@ lines instead:
 
 ```javascript
 app.set("view engine", "html");
-app.register(".html", require('facile'));
+app.engine("html", require("facile").__express);
 ```
 
 ## Running the Tests
